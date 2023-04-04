@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = ["haupham <hauph@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.95.0"
+uvicorn = "^0.21.1"
+black = "^23.3.0"
+authlib = "^1.2.0"
+itsdangerous = "^2.1.2"
+starlette = "^0.26.1"
+httpx = "^0.23.3"
+python-dotenv = "^1.0.0"
+pyjwt = "^2.6.0"
+sqlalchemy = "^2.0.8"
+psycopg2 = "^2.9.6"
+sqlalchemy-utils = "^0.40.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
