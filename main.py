@@ -15,9 +15,9 @@ from models.blacklist import Blacklist
 from models.user import User
 from models.todo import Todo
 
-Metadata.create_all(
-    bind=engine, tables=[User.__table__, Blacklist.__table__, Todo.__table__]
-)
+# Metadata.create_all(
+#     bind=engine, tables=[User.__table__, Blacklist.__table__, Todo.__table__]
+# )
 
 app = FastAPI()
 

@@ -16,9 +16,11 @@ starlette = "^0.26.1"
 httpx = "^0.23.3"
 python-dotenv = "^1.0.0"
 pyjwt = "^2.6.0"
-sqlalchemy = "^2.0.8"
-psycopg2 = "^2.9.6"
 sqlalchemy-utils = "^0.40.0"
+sqlalchemy = "^2.0.8"
+alembic = "^1.10.2"
+psycopg2-binary = "2.9.5"
+psycopg2 = "2.9.5"
 
 
 [build-system]
