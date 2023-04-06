@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from utils.db import is_token_blacklisted, valid_email_from_db
 from utils.error import print_error, CREDENTIALS_EXCEPTION
@@ -62,6 +61,7 @@ def create_token(email):
 
 async def get_current_user_email(request):
     token: str = await oauth2_scheme(request)
+
     if is_token_blacklisted(request, token) is not None:
         print_error("Token is blacklisted")
         raise CREDENTIALS_EXCEPTION
@@ -85,7 +85,6 @@ async def get_current_user_email(request):
 
 async def get_current_user_token(request):
     token: str = await oauth2_scheme(request)
-    _ = get_current_user_email(request, token)
     return token
 
 

@@ -8,7 +8,7 @@ def get_blacklist_token(db: Session, token: str):
 
 
 def create_blacklist_token(db: Session, token: str):
-    db_blacklist = Blacklist(token=token)
+    db_blacklist = Blacklist(key=token)
     db.add(db_blacklist)
     db.commit()
     db.refresh(db_blacklist)

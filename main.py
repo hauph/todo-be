@@ -10,14 +10,10 @@ from utils.db import get_db
 from utils.jwt import get_current_user_token
 from utils.error import print_error, CREDENTIALS_EXCEPTION
 
-from db.database import SessionLocal, engine, Metadata
-from models.blacklist import Blacklist
-from models.user import User
+from db.database import SessionLocal, engine, Base
 from models.todo import Todo
 
-# Metadata.create_all(
-#     bind=engine, tables=[User.__table__, Blacklist.__table__, Todo.__table__]
-# )
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -57,23 +53,22 @@ async def token(request: Request):
     return HTMLResponse(
         """
                 <script>
-                function send(){
-                    var req = new XMLHttpRequest();
-                    req.onreadystatechange = function() {
-                        if (req.readyState === 4) {
-                            console.log(req.response);
-                            if (req.response["result"] === true) {
-                                window.localStorage.setItem('jwt', req.response["access_token"]);
-                                window.localStorage.setItem('refresh', req.response["refresh_token"]);
+                    function send(){
+                        var req = new XMLHttpRequest();
+                        req.onreadystatechange = function() {
+                            if (req.readyState === 4) {
+                                console.log(req.response);
+                                if (req.response["result"] === true) {
+                                    window.localStorage.setItem('jwt', req.response["access_token"]);
+                                    window.localStorage.setItem('refresh', req.response["refresh_token"]);
+                                }
                             }
                         }
+                        req.withCredentials = true;
+                        req.responseType = 'json';
+                        req.open("get", "/auth/token?"+window.location.search.substr(1), true);
+                        req.send("");
                     }
-                    req.withCredentials = true;
-                    req.responseType = 'json';
-                    req.open("get", "/auth/token?"+window.location.search.substr(1), true);
-                    req.send("");
-
-                }
                 </script>
                 <button onClick="send()">Get FastAPI JWT Token</button>
                 <button onClick='fetch("http://127.0.0.1:7000/api/").then(
@@ -125,14 +120,15 @@ async def token(request: Request):
 
 
 @app.get("/logout")
-def logout(request: Request, token: str = Depends(get_current_user_token)):
+async def logout(request: Request):
     try:
+        token: str = await get_current_user_token(request)
         db = get_db(request)
         db_blacklist = create_blacklist_token(db, token)
         if db_blacklist:
             return JSONResponse({"result": True})
     except Exception as e:
-        print_error("Logout Error", e)
+        print_error("Try Logout", e)
         raise CREDENTIALS_EXCEPTION
 
     print_error("Logout Error", "Something went wrong")

@@ -12,3 +12,11 @@
 
 `docker compose up`
 
+## Secret keys for SECRET_KEY and API_SECRET_KEY:
+
+```
+python3
+import secrets
+generated_key = secrets.token_urlsafe(30)
+print(generated_key)
+```
