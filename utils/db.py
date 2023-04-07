@@ -1,7 +1,7 @@
 from fastapi import Request
 
-from crud.blacklist import get_blacklist_token
-from crud.user import get_user_by_email
+from controllers.blacklist import get_blacklist_token
+from controllers.user import get_user_by_email
 
 
 def get_db(request: Request):

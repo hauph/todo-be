@@ -21,7 +21,7 @@ from utils.jwt import (
 
 from utils.error import print_error, CREDENTIALS_EXCEPTION
 
-from crud.user import create_user, get_user_by_email
+from controllers.user import create_user, get_user_by_email
 
 load_dotenv()
 
