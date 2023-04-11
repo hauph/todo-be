@@ -1,35 +1,33 @@
-import os
 from datetime import datetime
-
 from fastapi import FastAPI, Request
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import JSONResponse
-from dotenv import load_dotenv
 from authlib.integrations.starlette_client import OAuthError, OAuth
 from starlette.config import Config
-
 from utils.db import (
     get_db,
     valid_email_from_db,
 )
-
 from utils.jwt import (
     create_token,
     create_refresh_token,
     decode_token,
 )
-
 from utils.error import print_error, CREDENTIALS_EXCEPTION
-
+from utils.env_loader import (
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    SECRET_KEY,
+    FRONTEND_URL,
+)
 from controllers.user import create_user, get_user_by_email
 
-load_dotenv()
 
 # OAuth settings
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID") or None
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET") or None
 if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
-    raise BaseException("Missing env variables")
+    raise BaseException(
+        "Missing env variables GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET"
+    )
 
 # Set up oauth
 config_data = {
@@ -48,13 +46,12 @@ oauth.register(
 auth_app = FastAPI()
 
 # Set up the middleware to read the request session
-SECRET_KEY = os.environ.get("SECRET_KEY") or None
 if SECRET_KEY is None:
-    raise "Missing SECRET_KEY"
+    raise BaseException("Missing SECRET_KEY")
 auth_app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 # Frontend URL:
-FRONTEND_URL = os.environ.get("FRONTEND_URL") or "http://127.0.0.1:7000/token"
+FRONTEND_URL = FRONTEND_URL or "http://127.0.0.1:7000/token"
 
 
 @auth_app.route("/login")

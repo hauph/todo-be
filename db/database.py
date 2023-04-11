@@ -3,15 +3,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy_utils import database_exists, create_database
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-POSTGRES_USER = os.environ.get("POSTGRES_USER") or None
-POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD") or None
-POSTGRES_DOMAIN = os.environ.get("POSTGRES_DOMAIN") or None
-POSTGRES_DB = os.environ.get("POSTGRES_DB") or None
+from utils.env_loader import (
+    POSTGRES_USER,
+    POSTGRES_PASSWORD,
+    POSTGRES_DOMAIN,
+    POSTGRES_DB,
+)
 
 if (
     POSTGRES_USER is None
@@ -19,7 +16,7 @@ if (
     or POSTGRES_DOMAIN is None
     or POSTGRES_DB is None
 ):
-    raise "Missing POSTGRES database information"
+    raise BaseException("Missing POSTGRES database information")
 
 SQLALCHEMY_DATABASE_URL = (
     f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_DOMAIN}/{POSTGRES_DB}"

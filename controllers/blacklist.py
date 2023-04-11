@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models.blacklist import Blacklist
+from models import Blacklist
 
 
 def get_blacklist_token(db: Session, token: str):

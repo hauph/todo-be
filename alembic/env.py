@@ -1,28 +1,26 @@
-import os
-from dotenv import load_dotenv
-
 from logging.config import fileConfig
-
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
 from alembic import context
-
+from utils.env_loader import (
+    POSTGRES_USER,
+    POSTGRES_PASSWORD,
+    POSTGRES_DOMAIN,
+    POSTGRES_DB,
+)
 from db.database import Base
+from models import *
 
-load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 section = config.config_ini_section
-config.set_section_option(section, "POSTGRES_USER", os.environ.get("POSTGRES_USER"))
-config.set_section_option(
-    section, "POSTGRES_PASSWORD", os.environ.get("POSTGRES_PASSWORD")
-)
-config.set_section_option(section, "POSTGRES_DOMAIN", os.environ.get("POSTGRES_DOMAIN"))
-config.set_section_option(section, "POSTGRES_DB", os.environ.get("POSTGRES_DB"))
+config.set_section_option(section, "POSTGRES_USER", POSTGRES_USER)
+config.set_section_option(section, "POSTGRES_PASSWORD", POSTGRES_PASSWORD)
+config.set_section_option(section, "POSTGRES_DOMAIN", POSTGRES_DOMAIN)
+config.set_section_option(section, "POSTGRES_DB", POSTGRES_DB)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -73,7 +71,7 @@ def run_migrations_online() -> None:
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

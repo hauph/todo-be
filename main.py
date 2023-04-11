@@ -3,18 +3,16 @@ from fastapi import FastAPI, Request, Depends, Response
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from db.database import SessionLocal
+
 from apis.auth import auth_app
-from apis.api import api_app
+
 from apis.todo import todo_app
 from controllers.blacklist import create_blacklist_token
 from utils.db import get_db
 from utils.jwt import get_current_user_token
 from utils.error import print_error, CREDENTIALS_EXCEPTION
 
-from db.database import SessionLocal, engine, Base
-from models.todo import Todo
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -41,7 +39,6 @@ async def db_session_middleware(request: Request, call_next):
 
 
 app.mount("/auth", auth_app)
-# app.mount("/api", api_app)
 app.mount("/api", todo_app)
 
 
@@ -108,7 +105,7 @@ async def token(request: Request):
                     body:JSON.stringify({
                         grant_type:\"refresh_token\",
                         refresh_token:window.localStorage.getItem(\"refresh\")
-                        })
+                    })
                 }).then((r)=>r.json()).then((msg)=>{
                     console.log(msg);
                     if (msg["result"] === true) {
