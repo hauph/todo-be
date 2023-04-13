@@ -4,8 +4,9 @@ from datetime import datetime
 
 class TodoBase(BaseModel):
     description: str
-    remind_at: datetime
-    completed: bool
+    remind_at: datetime | None
+    completed: bool | None
+    message_id: str | None
 
 
 class TodoCreate(TodoBase):

@@ -12,8 +12,7 @@ from utils.db import (
     get_db,
 )
 from utils.error import print_error
-import json
-
+from utils.sqs import send_to_queue
 import logging
 
 todo_app = FastAPI()
@@ -44,6 +43,9 @@ async def create_todo(request: Request, body=Body(..., media_type="application/j
         # Only accept post requests
         if request.method == "POST":
             current_email: str = await get_current_user_email(request)
+            if body["remind_at"]:
+                message_id = send_to_queue(body, current_email)
+                body["message_id"] = message_id
             db = get_db(request)
             user = get_user_by_email(db, current_email)
             create_user_todo(db, body, user.id)

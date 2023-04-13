@@ -21,7 +21,7 @@ sqlalchemy = "^2.0.8"
 psycopg2-binary = "2.9.5"
 psycopg2 = "^2.9.6"
 alembic = "^1.10.3"
-celery = "^5.2.7"
+boto3 = "^1.26.111"
 
 
 [build-system]

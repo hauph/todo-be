@@ -13,8 +13,9 @@ class Todo(Base):
     description = Column(String, index=True, nullable=False)
     completed = Column(Boolean, index=True, default=False, nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, onupdate=func.current_timestamp())
+    message_id = Column(String, index=True)
 
     owner = relationship("User", back_populates="todos")
 

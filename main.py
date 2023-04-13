@@ -13,6 +13,8 @@ from utils.db import get_db
 from utils.jwt import get_current_user_token
 from utils.error import print_error, CREDENTIALS_EXCEPTION
 
+from utils.scheduler import scheduler
+
 
 app = FastAPI()
 
@@ -135,4 +137,7 @@ async def logout(request: Request):
 
 
 if __name__ == "__main__":
+    scheduler()
     uvicorn.run(app, port=7000)
+# else:
+#     scheduler()
