@@ -6,7 +6,7 @@
 
 ## Dev server:
 
-`uvicorn main:app --reload --port 7000`
+`uvicorn main:app --reload --port 8000`
 
 ## Docker:
 

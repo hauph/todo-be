@@ -3,6 +3,7 @@ import datetime
 import time
 from utils.env_loader import SQS_URL
 from utils.send_mail_normal import send_email
+from utils.ses import send_email_ses, is_email_in_ses
 from utils.error import print_error
 
 if SQS_URL is None:
@@ -47,8 +48,12 @@ def scheduler():
                     if datetime.datetime.now() >= datetime.datetime.strptime(
                         delivery_time, "%Y-%m-%d %H:%M:%S.%f"
                     ):
-                        # Send the email using SMTP
-                        send_email(to_address, subject, body)
+                        if is_email_in_ses(to_address):
+                            # Send the email using SES
+                            send_email_ses(to_address, subject, body)
+                        else:
+                            # Send the email using SMTP
+                            send_email(to_address, subject, body)
 
                         # Delete the message from the SQS queue
                         sqs.delete_message(

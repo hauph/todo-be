@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request, Body
 from starlette.responses import JSONResponse
-from utils.jwt import get_current_user_email
 from controllers.user import get_user_by_email
 from controllers.todo import (
     get_user_todos,
@@ -24,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG)
 @todo_app.get("/todos")
 async def get_all_todos(request: Request):
     try:
-        current_email: str = await get_current_user_email(request)
+        current_email: str = request.state.user_email
         db = get_db(request)
         user = get_user_by_email(db, current_email)
         todos = get_user_todos(db, user.id)
@@ -42,7 +41,7 @@ async def create_todo(request: Request, body=Body(..., media_type="application/j
     try:
         # Only accept post requests
         if request.method == "POST":
-            current_email: str = await get_current_user_email(request)
+            current_email: str = request.state.user_email
             if body["remind_at"]:
                 message_id = send_to_queue(body, current_email)
                 body["message_id"] = message_id

@@ -1,18 +1,15 @@
 import uvicorn
-from fastapi import FastAPI, Request, Depends, Response
+from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
+import threading
 from db.database import SessionLocal
-
 from apis.auth import auth_app
-
 from apis.todo import todo_app
 from controllers.blacklist import create_blacklist_token
 from utils.db import get_db
-from utils.jwt import get_current_user_token
+from utils.jwt import get_current_user_token, get_current_user_email
 from utils.error import print_error, CREDENTIALS_EXCEPTION
-
 from utils.scheduler import scheduler
 
 
@@ -34,7 +31,24 @@ async def db_session_middleware(request: Request, call_next):
     response = Response("Internal server error", status_code=500)
     try:
         request.state.db = SessionLocal()
+        if (
+            request.url.path != "/"
+            and request.url.path != "/token"
+            and request.url.path.find("/auth/") == -1
+        ):
+            token: str = await get_current_user_token(request)
+            email: str = await get_current_user_email(request)
+            request.state.user_token = token
+            request.state.user_email = email
         response = await call_next(request)
+    except Exception as e:
+        print_error("Credentials Exception", e)
+        response = JSONResponse(
+            {
+                "detail": "Could not validate credentials",
+            },
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
     finally:
         request.state.db.close()
     return response
@@ -72,22 +86,7 @@ async def token(request: Request):
                     }
                 </script>
                 <button onClick="send()">Get FastAPI JWT Token</button>
-                <button onClick='fetch("http://127.0.0.1:7000/api/").then(
-                    (r)=>r.json()).then((msg)=>{console.log(msg)});'>
-                Call Unprotected API
-                </button>
-                <button onClick='fetch("http://127.0.0.1:7000/api/protected").then(
-                    (r)=>r.json()).then((msg)=>{console.log(msg)});'>
-                Call Protected API without JWT
-                </button>
-                <button onClick='fetch("http://127.0.0.1:7000/api/protected",{
-                    headers:{
-                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
-                    },
-                }).then((r)=>r.json()).then((msg)=>{console.log(msg)});'>
-                Call Protected API wit JWT
-                </button>
-                <button onClick='fetch("http://127.0.0.1:7000/logout",{
+                <button onClick='fetch("http://127.0.0.1:8000/logout",{
                     headers:{
                         "Authorization": "Bearer " + window.localStorage.getItem("jwt")
                     },
@@ -99,7 +98,7 @@ async def token(request: Request):
                     });'>
                 Logout
                 </button>
-                <button onClick='fetch("http://127.0.0.1:7000/auth/refresh",{
+                <button onClick='fetch("http://127.0.0.1:8000/auth/refresh",{
                     method: "POST",
                     headers:{
                         "Authorization": "Bearer " + window.localStorage.getItem("jwt")
@@ -123,7 +122,7 @@ async def token(request: Request):
 @app.get("/logout")
 async def logout(request: Request):
     try:
-        token: str = await get_current_user_token(request)
+        token: str = request.state.user_token
         db = get_db(request)
         db_blacklist = create_blacklist_token(db, token)
         if db_blacklist:
@@ -137,7 +136,6 @@ async def logout(request: Request):
 
 
 if __name__ == "__main__":
-    scheduler()
-    uvicorn.run(app, port=7000)
-# else:
-#     scheduler()
+    scheduler_thread = threading.Thread(target=scheduler)
+    scheduler_thread.start()
+    uvicorn.run(app, port=8000)

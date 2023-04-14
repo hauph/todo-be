@@ -60,7 +60,7 @@ def create_token(email):
 
 
 async def get_current_user_email(request):
-    token: str = await oauth2_scheme(request)
+    token: str = await get_current_user_token(request)
 
     if is_token_blacklisted(request, token) is not None:
         print_error("Token is blacklisted")

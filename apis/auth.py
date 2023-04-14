@@ -20,6 +20,7 @@ from utils.env_loader import (
     SECRET_KEY,
     FRONTEND_URL,
 )
+from utils.ses import verify_email
 from controllers.user import create_user, get_user_by_email
 
 
@@ -51,7 +52,7 @@ if SECRET_KEY is None:
 auth_app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 # Frontend URL:
-FRONTEND_URL = FRONTEND_URL or "http://127.0.0.1:7000/token"
+FRONTEND_URL = FRONTEND_URL or "http://127.0.0.1:8000/token"
 
 
 @auth_app.route("/login")
@@ -71,6 +72,7 @@ async def auth(request: Request):
     try:
         user = access_token["userinfo"]
         email = access_token["userinfo"]["email"]
+        verify_email(email)
         db = get_db(request)
         db_user = get_user_by_email(db, email)
         if db_user is None:
