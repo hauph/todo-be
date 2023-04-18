@@ -33,7 +33,7 @@ async def get_all_todos(request: Request):
         }
     except Exception as e:
         print_error("Try get all todos", e)
-        raise e
+        raise Exception("Error trying to get all todos")
 
 
 @todo_app.post("/todos")
@@ -55,7 +55,7 @@ async def create_todo(request: Request, body=Body(..., media_type="application/j
             )
     except Exception as e:
         print_error("Post todo", e)
-        raise e
+        raise Exception("Error trying to post todo")
 
 
 @todo_app.put("/todos/{id}")
@@ -73,7 +73,7 @@ async def edit_todo(
             )
     except Exception as e:
         print_error("Edit todo", e)
-        raise e
+        raise Exception("Error trying to edit todo")
 
 
 @todo_app.delete("/todos")
@@ -91,6 +91,6 @@ async def delete_todo(request: Request, body=Body(..., media_type="application/j
                 )
         except Exception as e:
             print_error("Delete todo", e)
-            raise e
+            raise Exception("Error trying to delete todo")
     else:
         raise Exception("Nothing to delete")

@@ -26,4 +26,4 @@ def send_email(to, subject, body):
         print("Email sent to " + to)
     except Exception as e:
         print_error("Error sending email to " + to, e)
-        raise e
+        raise Exception("Error sending email to " + to)

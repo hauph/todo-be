@@ -1,11 +1,15 @@
 from fastapi import Request
-
+from typing import Optional
 from controllers.blacklist import get_blacklist_token
 from controllers.user import get_user_by_email
+from db.database import SessionLocal
 
 
-def get_db(request: Request):
-    return request.state.db
+def get_db(request: Optional[Request] = None):
+    if request:
+        return request.state.db
+    else:
+        return SessionLocal()
 
 
 def is_token_blacklisted(request: Request, token: str):

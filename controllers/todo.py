@@ -12,6 +12,10 @@ def get_user_todos(db: Session, user_id: int):
     return db.query(Todo).filter(Todo.owner_id == user_id).all()
 
 
+def get_task_by_message_id(db: Session, message_id: str):
+    return db.query(Todo).filter(Todo.message_id == message_id).first()
+
+
 def create_user_todo(db: Session, todo: TodoCreate, user_id: int):
     db_todo = Todo(**todo, owner_id=user_id)
     db.add(db_todo)

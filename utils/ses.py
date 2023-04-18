@@ -15,8 +15,8 @@ def is_email_in_ses(email: str):
         response = ses.list_identities(IdentityType="EmailAddress")
         return email in response["Identities"]
     except ClientError as e:
-        print_error("Error verifying email: ", e)
-        raise e
+        print_error(f"Error checking if email {e} is in SES")
+        raise Exception(f"Error checking if email {e} is in SES")
 
 
 def verify_email(email: str):
@@ -28,7 +28,7 @@ def verify_email(email: str):
         print("Email verification sent to " + email)
     except ClientError as e:
         print_error("Error verifying email: ", e)
-        raise e
+        raise Exception("Error verifying email: ", e)
 
 
 def send_email_ses(to_address, subject, body):
@@ -43,4 +43,4 @@ def send_email_ses(to_address, subject, body):
         print("Email sent to " + to_address)
     except ClientError as e:
         print_error(f"Error sending email to {to_address}", e)
-        raise e
+        raise Exception(f"Error sending email to {to_address}", e)

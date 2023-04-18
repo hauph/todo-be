@@ -17,6 +17,7 @@ class TodoUpdate(TodoBase):
     description: str | None
     remind_at: datetime | None
     completed: bool | None
+    message_id: str | None
 
 
 class Todo(TodoBase):

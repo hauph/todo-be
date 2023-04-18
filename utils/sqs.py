@@ -1,8 +1,9 @@
 import boto3
 import datetime
+import uuid
 from utils.env_loader import SQS_URL
 from utils.error import print_error
-import uuid
+from schemas.todo import TodoCreate
 
 if SQS_URL is None:
     raise BaseException("Missing env variables SQS_URL")
@@ -16,7 +17,7 @@ sqs.set_queue_attributes(
 message_group_id = str(uuid.uuid4())
 
 
-def send_to_queue(data, email: str):
+def send_to_queue(data: TodoCreate, email: str, mgid: str = message_group_id):
     try:
         due_date = datetime.datetime.strptime(
             data["remind_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -40,11 +41,11 @@ def send_to_queue(data, email: str):
                 },
             },
             MessageBody=message_body,
-            MessageGroupId=message_group_id,
+            MessageGroupId=mgid,
         )
         print("Message sent to SQS queue")
         return response["MessageId"]
 
     except Exception as e:
         print_error("Error sending message to SQS queue", e)
-        raise e
+        raise Exception("Error sending message to SQS queue", e)
