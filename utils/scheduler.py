@@ -2,7 +2,7 @@ import boto3
 import datetime
 import time
 import uuid
-from utils.env_loader import SQS_URL
+from utils.env_loader import SQS_URL, AWS_REGION_NAME
 from utils.send_mail_normal import send_email
 from utils.ses import send_email_ses, is_email_in_ses
 from utils.error import print_error
@@ -15,7 +15,7 @@ if SQS_URL is None:
     raise BaseException("Missing env variables SQS_URL")
 
 # Create an SQS client
-sqs = boto3.client("sqs")
+sqs = boto3.client("sqs", region_name=AWS_REGION_NAME)
 
 
 def scheduler():

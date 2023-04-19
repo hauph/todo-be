@@ -1,13 +1,13 @@
 import boto3
 from botocore.exceptions import ClientError
-from utils.env_loader import EMAIL
+from utils.env_loader import EMAIL, AWS_REGION_NAME
 from utils.error import print_error
 
 if EMAIL is None:
     raise BaseException("Missing env variable EMAIL")
 
 # Create an SES client
-ses = boto3.client("ses")
+ses = boto3.client("ses", region_name=AWS_REGION_NAME)
 
 
 def is_email_in_ses(email: str):

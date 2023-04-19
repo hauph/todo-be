@@ -1,7 +1,7 @@
 import boto3
 import datetime
 import uuid
-from utils.env_loader import SQS_URL
+from utils.env_loader import SQS_URL, AWS_REGION_NAME
 from utils.error import print_error
 from schemas.todo import TodoCreate
 
@@ -9,7 +9,7 @@ if SQS_URL is None:
     raise BaseException("Missing env variables SQS_URL")
 
 # Create an SQS client
-sqs = boto3.client("sqs")
+sqs = boto3.client("sqs", region_name=AWS_REGION_NAME)
 sqs.set_queue_attributes(
     QueueUrl=SQS_URL, Attributes={"ContentBasedDeduplication": "true"}
 )
