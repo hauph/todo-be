@@ -2,14 +2,12 @@ import os
 from datetime import datetime, timedelta
 
 import jwt
-from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
+from dotenv import load_dotenv
 from utils.db import is_token_blacklisted, valid_email_from_db
 from utils.error import print_error, CREDENTIALS_EXCEPTION
 
-
 load_dotenv()
-
 
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30  # 30 days
 

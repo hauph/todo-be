@@ -14,34 +14,86 @@ jobs:
     build:
         runs-on: [self-hosted]
 
+        environment:
+            name: To Do BE
+            url: https://github.com
+
         steps:
+            - name: Set permissions
+              run: |
+                  sudo chmod 777 -R /home/ubuntu/actions-runner/_work/todo-be/todo-be
+
             - name: Checkout repository
               uses: actions/checkout@v3
 
-            - name: Set up python
-              uses: actions/setup-python@v2
-              with:
-                  python-version: 3.11
+            - name: Set up .env
+              env:
+                  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+                  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+                  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+                  API_SECRET_KEY: ${{ secrets.API_SECRET_KEY }}
+                  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+                  AWS_REGION_NAME: ${{ vars.AWS_REGION_NAME }}
+                  EMAIL: ${{ vars.EMAIL }}
+                  POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+                  POSTGRES_DOMAIN: ${{ vars.POSTGRES_DOMAIN }}
+                  POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+                  SQS_URL: ${{ vars.SQS_URL }}
+              run: |
+                  touch .env
+                  echo GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" >> .env
+                  echo GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" >> .env
+                  echo SECRET_KEY="$SECRET_KEY" >> .env
+                  echo API_SECRET_KEY="$API_SECRET_KEY" >> .env
+                  echo POSTGRES_PASSWORD="$POSTGRES_PASSWORD" >> .env
+                  echo EMAIL_PASSWORD="$EMAIL_PASSWORD" >> .env
+                  echo AWS_REGION_NAME="$AWS_REGION_NAME" >> .env
+                  echo EMAIL="$EMAIL" >> .env
+                  echo POSTGRES_DB="$POSTGRES_DB" >> .env
+                  echo POSTGRES_DOMAIN="$POSTGRES_DOMAIN" >> .env
+                  echo POSTGRES_USER="$POSTGRES_USER" >> .env
+                  echo SQS_URL="$SQS_URL" >> .env
 
-            - name: Install Poetry
-              uses: snok/install-poetry@v1.3.3
+            # - name: Set up python
+            #   uses: actions/setup-python@v2
+            #   with:
+            #       python-version: 3.11
 
-            - name: cache deps
-              id: cache-deps
-              uses: actions/cache@v3
-              with:
-                  path: .venv
-                  key: pydeps-${{ hashFiles('**/poetry.lock') }}
+            # - name: Install Poetry
+            #   uses: snok/install-poetry@v1.3.3
 
-            - run: poetry install --no-interaction --no-root
-              if: steps.cache-deps.outputs.cache-hit != 'true'
+            # # Source for next 3 commands: https://stackoverflow.com/questions/75310294/github-actions-poetry-installs-black-but-ci-workflow-does-not-find-it
 
-            - run: poetry install --no-interaction
+            # # Cache your dependencies (i.e. all the stuff in your `pyproject.toml`). Note the cache
+            # # key: if you're using multiple Python versions, or multiple OSes, you'd need to include
+            # # them in the cache key. I'm not, so it can be simple and just depend on the poetry.lock.
+            # - name: Cache deps
+            #   id: cache-deps
+            #   uses: actions/cache@v3
+            #   with:
+            #       path: .venv
+            #       key: pydeps-${{ hashFiles('**/poetry.lock') }}
+
+            # # Install dependencies. `--no-root` means "install all dependencies but not the project
+            # # itself", which is what you want to avoid caching _your_ code. The `if` statement
+            # # ensures this only runs on a cache miss.
+            # - run: poetry install --no-interaction --no-root
+            #   if: steps.cache-deps.outputs.cache-hit != 'true'
+
+            # # Now install _your_ project. This isn't necessary for many types of projects -- particularly
+            # # things like Django apps don't need this. But it's a good idea since it fully-exercises the
+            # # pyproject.toml and makes that if you add things like console-scripts at some point that
+            # # they'll be installed and working.
+            # - run: poetry install --no-interaction
 
             # - name: Install dependencies
             #   run: |
             #       poetry install
 
-            - name: Run server
+            - name: Restart server
+              env:
+                  SERVICE_NAME: ${{secrets.SERVICE_NAME}}
               run: |
-                  poetry run python3 main.py
+                  sudo systemctl restart $SERVICE_NAME
+                  sudo systemctl restart $SERVICE_NAME
