@@ -19,6 +19,7 @@ from utils.env_loader import (
     GOOGLE_CLIENT_SECRET,
     SECRET_KEY,
     FRONTEND_URL,
+    APP_URL,
 )
 from utils.ses import verify_email
 from controllers.user import create_user, get_user_by_email
@@ -52,7 +53,7 @@ if SECRET_KEY is None:
 auth_app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 # Frontend URL:
-FRONTEND_URL = FRONTEND_URL or "http://127.0.0.1:8000/token"
+FRONTEND_URL = FRONTEND_URL or f"{APP_URL}/token"
 
 
 @auth_app.route("/login")

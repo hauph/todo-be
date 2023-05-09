@@ -11,6 +11,7 @@ from utils.db import get_db
 from utils.jwt import get_current_user_token, get_current_user_email
 from utils.error import print_error, CREDENTIALS_EXCEPTION
 from utils.scheduler import scheduler
+from utils.env_loader import APP_URL
 
 
 app = FastAPI()
@@ -60,62 +61,62 @@ app.mount("/api", todo_app)
 
 @app.get("/")
 async def root():
-    return HTMLResponse('<body><a href="/auth/login">Log In Test</a></body>')
+    return HTMLResponse('<body><a href="/auth/login">Log In</a></body>')
 
 
 @app.get("/token")
 async def token(request: Request):
     return HTMLResponse(
         """
-                <script>
-                    function send(){
-                        var req = new XMLHttpRequest();
-                        req.onreadystatechange = function() {
-                            if (req.readyState === 4) {
-                                console.log(req.response);
-                                if (req.response["result"] === true) {
-                                    window.localStorage.setItem('jwt', req.response["access_token"]);
-                                    window.localStorage.setItem('refresh', req.response["refresh_token"]);
-                                }
+            <script>
+                function send(){
+                    var req = new XMLHttpRequest();
+                    req.onreadystatechange = function() {
+                        if (req.readyState === 4) {
+                            console.log(req.response);
+                            if (req.response["result"] === true) {
+                                window.localStorage.setItem('jwt', req.response["access_token"]);
+                                window.localStorage.setItem('refresh', req.response["refresh_token"]);
                             }
                         }
-                        req.withCredentials = true;
-                        req.responseType = 'json';
-                        req.open("get", "/auth/token?"+window.location.search.substr(1), true);
-                        req.send("");
                     }
-                </script>
-                <button onClick="send()">Get FastAPI JWT Token</button>
-                <button onClick='fetch("http://127.0.0.1:8000/logout",{
-                    headers:{
-                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
-                    },
-                }).then((r)=>r.json()).then((msg)=>{
-                    console.log(msg);
-                    if (msg["result"] === true) {
-                        window.localStorage.removeItem("jwt");
-                    }
-                    });'>
-                Logout
-                </button>
-                <button onClick='fetch("http://127.0.0.1:8000/auth/refresh",{
-                    method: "POST",
-                    headers:{
-                        "Authorization": "Bearer " + window.localStorage.getItem("jwt")
-                    },
-                    body:JSON.stringify({
-                        grant_type:\"refresh_token\",
-                        refresh_token:window.localStorage.getItem(\"refresh\")
-                    })
-                }).then((r)=>r.json()).then((msg)=>{
-                    console.log(msg);
-                    if (msg["result"] === true) {
-                        window.localStorage.setItem("jwt", msg["access_token"]);
-                    }
-                    });'>
-                Refresh
-                </button>
-            """
+                    req.withCredentials = true;
+                    req.responseType = 'json';
+                    req.open("get", "/auth/token?"+window.location.search.substr(1), true);
+                    req.send("");
+                }
+            </script>
+            <button onClick="send()">Get FastAPI JWT Token</button>
+            <button onClick='fetch("{APP_URL}/logout",{
+                headers:{
+                    "Authorization": "Bearer " + window.localStorage.getItem("jwt")
+                },
+            }).then((r)=>r.json()).then((msg)=>{
+                console.log(msg);
+                if (msg["result"] === true) {
+                    window.localStorage.removeItem("jwt");
+                }
+                });'>
+            Logout
+            </button>
+            <button onClick='fetch("{APP_URL}/auth/refresh",{
+                method: "POST",
+                headers:{
+                    "Authorization": "Bearer " + window.localStorage.getItem("jwt")
+                },
+                body:JSON.stringify({
+                    grant_type:\"refresh_token\",
+                    refresh_token:window.localStorage.getItem(\"refresh\")
+                })
+            }).then((r)=>r.json()).then((msg)=>{
+                console.log(msg);
+                if (msg["result"] === true) {
+                    window.localStorage.setItem("jwt", msg["access_token"]);
+                }
+                });'>
+            Refresh
+            </button>
+        """
     )
 
 
