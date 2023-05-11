@@ -1,5 +1,3 @@
-from datetime import datetime
-
 MESSAGE_RETENTION_PERIOD = 345600  # 4 days
 
 
