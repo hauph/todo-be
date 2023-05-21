@@ -1,5 +1,63 @@
 version: '3.8'
+networks:
+  # This special network is configured so that the local metadata
+  # service can bind to the specific IP address that ECS uses
+  # in production
+  credentials_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "169.254.170.0/24"
+          gateway: 169.254.170.1
+  # my_network:
 services:
+  # This container vends credentials to your containers
+  ecs-local-endpoints:
+    # The Amazon ECS Local Container Endpoints Docker Image
+    image: amazon/amazon-ecs-local-container-endpoints
+    volumes:
+      # Mount /var/run so we can access docker.sock and talk to Docker
+      - /var/run:/var/run
+      # Mount the shared configuration directory, used by the AWS CLI and AWS SDKs
+      # On Windows, this directory can be found at "%UserProfile%\.aws"
+      - $HOME/.aws/:/home/.aws/
+    environment:
+      # define the home folder; credentials will be read from $HOME/.aws
+      HOME: "/home"
+      # You can change which AWS CLI Profile is used
+      AWS_PROFILE: "default"
+    networks:
+      credentials_network:
+        # This special IP address is recognized by the AWS SDKs and AWS CLI 
+        ipv4_address: "169.254.170.2"
+  api:
+    build: .
+    command: bash -c "alembic upgrade head && python main.py"
+    ports:
+      - 8000:8000
+    environment:
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      SECRET_KEY: ${SECRET_KEY}
+      API_SECRET_KEY: ${API_SECRET_KEY}
+      EMAIL: ${EMAIL}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      SQS_URL: ${SQS_URL}
+      AWS_REGION_NAME: ${AWS_REGION_NAME}
+      APP_URL: ${APP_URL}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DOMAIN: db:5432
+      AWS_DEFAULT_REGION: "ap-southeast-1"
+      AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds"
+      PORT: 8000
+    depends_on:
+      - db
+      - ecs-local-endpoints
+    networks:
+      # - my_network
+      - credentials_network
   db:
     image: postgres:14-bullseye
     ports:
@@ -9,8 +67,13 @@ services:
       POSTGRES_PASSWORD: Pa$$w0rd
       POSTGRES_DB: backend_db
       POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.4"
   adminer:
     image: adminer
     restart: always
+    depends_on:
+      - db
     ports:
       - 8080:8080

@@ -1,8 +1,9 @@
 import uvicorn
+import threading
+
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import threading
 from db.database import SessionLocal
 from apis.auth import auth_app
 from apis.todo import todo_app
@@ -139,4 +140,4 @@ async def logout(request: Request):
 if __name__ == "__main__":
     scheduler_thread = threading.Thread(target=scheduler)
     scheduler_thread.start()
-    uvicorn.run(app, port=8000)
+    uvicorn.run(app, port=8000, host="0.0.0.0")
