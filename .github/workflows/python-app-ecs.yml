@@ -1,0 +1,93 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application
+
+on:
+    push:
+        branches: ['ecs']
+
+permissions:
+    contents: read
+
+jobs:
+    lint:
+        runs-on: [self-hosted]
+
+        steps:
+            - name: Set up python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: 3.11
+
+            - name: Install Poetry
+              uses: snok/install-poetry@v1.3.3
+
+            - name: Install flake8
+              run: |
+                  poetry add flake8
+
+            - name: Lint with flake8
+              run: |
+                  # stop the build if there are Python syntax errors or undefined names
+                  poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+                  # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+                  poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+            # - name: Test with pytest
+            #   run: |
+            #       poetry run pytest
+
+    build_and_deploy:
+        needs: lint
+
+        runs-on: [self-hosted]
+
+        environment:
+            name: To Do BE
+            url: https://github.com
+
+        steps:
+            - name: Set permissions
+              run: |
+                  sudo chmod 777 -R /home/ubuntu/actions-runner/_work/todo-be/todo-be
+
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up .env
+              env:
+                  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+                  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+                  SECRET_KEY: ${{ secrets.SECRET_KEY }}
+                  API_SECRET_KEY: ${{ secrets.API_SECRET_KEY }}
+                  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+                  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+                  AWS_REGION_NAME: ${{ vars.AWS_REGION_NAME }}
+                  EMAIL: ${{ vars.EMAIL }}
+                  POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+                  POSTGRES_DOMAIN: ${{ vars.POSTGRES_DOMAIN }}
+                  POSTGRES_USER: ${{ vars.POSTGRES_USER }}
+                  SQS_URL: ${{ vars.SQS_URL }}
+                  APP_URL: ${{ vars.APP_URL }}
+              run: |
+                  touch .env
+                  echo GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" >> .env
+                  echo GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" >> .env
+                  echo SECRET_KEY="$SECRET_KEY" >> .env
+                  echo API_SECRET_KEY="$API_SECRET_KEY" >> .env
+                  echo POSTGRES_PASSWORD="$POSTGRES_PASSWORD" >> .env
+                  echo EMAIL_PASSWORD="$EMAIL_PASSWORD" >> .env
+                  echo AWS_REGION_NAME="$AWS_REGION_NAME" >> .env
+                  echo EMAIL="$EMAIL" >> .env
+                  echo POSTGRES_DB="$POSTGRES_DB" >> .env
+                  echo POSTGRES_DOMAIN="$POSTGRES_DOMAIN" >> .env
+                  echo POSTGRES_USER="$POSTGRES_USER" >> .env
+                  echo SQS_URL="$SQS_URL" >> .env
+                  echo APP_URL="$APP_URL" >> .env
+
+            # - name: Restart server
+            #   env:
+            #       SERVICE_NAME: ${{secrets.SERVICE_NAME}}
+            #   run: |
+            #       sudo systemctl restart $SERVICE_NAME
