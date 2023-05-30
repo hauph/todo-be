@@ -71,6 +71,9 @@ COPY ./db /app/db
 COPY ./models /app/models
 COPY ./schemas /app/schemas
 COPY ./utils /app/utils
+COPY .env /app/
 COPY main.py /app
 
 EXPOSE 8000
+
+CMD python main.py

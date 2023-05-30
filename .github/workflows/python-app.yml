@@ -11,6 +11,17 @@ permissions:
     contents: read
 
 jobs:
+    pull_code:
+        runs-on: [self-hosted]
+
+        steps:
+            - name: Set permissions
+              run: |
+                  sudo chmod 777 -R /home/ubuntu/actions-runner/_work/todo-be/todo-be
+
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
     lint:
         runs-on: [self-hosted]
 
@@ -48,13 +59,6 @@ jobs:
             url: https://github.com
 
         steps:
-            - name: Set permissions
-              run: |
-                  sudo chmod 777 -R /home/ubuntu/actions-runner/_work/todo-be/todo-be
-
-            - name: Checkout repository
-              uses: actions/checkout@v3
-
             - name: Set up .env
               env:
                   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}

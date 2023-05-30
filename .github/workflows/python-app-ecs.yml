@@ -1,18 +1,32 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python application
+name: Python application on ECS
 
 on:
     push:
         branches: ['ecs']
 
 permissions:
-    contents: read
+    id-token: write # This is required for requesting the JWT
+    contents: read # This is required for actions/checkout
 
 jobs:
+    pull_code:
+        runs-on: [self-hosted, ec2_ecs]
+
+        steps:
+            - name: Set permissions
+              run: |
+                  sudo chmod 777 -R /home/ubuntu/actions-runner/_work/todo-be/todo-be
+
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
     lint:
-        runs-on: [self-hosted]
+        needs: pull_code
+
+        runs-on: [self-hosted, ec2_ecs]
 
         steps:
             - name: Set up python
@@ -39,22 +53,15 @@ jobs:
             #       poetry run pytest
 
     build_and_deploy:
-        needs: lint
+        needs: [pull_code, lint]
 
-        runs-on: [self-hosted, linux, x64, ec2_ecs]
+        runs-on: [self-hosted, ec2_ecs]
 
         environment:
             name: To Do BE
             url: https://github.com
 
         steps:
-            - name: Set permissions
-              run: |
-                  sudo chmod 777 -R /home/ubuntu/actions-runner/_work/todo-be/todo-be
-
-            - name: Checkout repository
-              uses: actions/checkout@v3
-
             - name: Set up .env
               env:
                   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -86,8 +93,24 @@ jobs:
                   echo SQS_URL="$SQS_URL" >> .env
                   echo APP_URL="$APP_URL" >> .env
 
-            # - name: Restart server
-            #   env:
-            #       SERVICE_NAME: ${{secrets.SERVICE_NAME}}
-            #   run: |
-            #       sudo systemctl restart $SERVICE_NAME
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  aws-region: ${{ vars.AWS_REGION_NAME }}
+                  role-to-assume: arn:aws:iam::917804555365:role/iam-roles-to-connect-github-actions-to-aws
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+
+            # - name: Login to Amazon ECR
+            #   id: ecr-login
+            #   uses: aws-actions/amazon-ecr-login@v1
+
+            - name: Build docker
+              #   env:
+              #       REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+              #       REPOSITORY: todo-fast-api
+              #       IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  aws ecr get-login-password --region ${{ vars.AWS_REGION_NAME }} | sudo docker login --username AWS --password-stdin 917804555365.dkr.ecr.ap-southeast-1.amazonaws.com
+                  sudo docker build -t todo-fast-api .
+                  sudo docker tag todo-fast-api:latest 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
+                  sudo docker push 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
