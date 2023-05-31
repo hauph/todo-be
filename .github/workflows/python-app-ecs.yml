@@ -102,4 +102,4 @@ jobs:
                   sudo docker build -t todo-fast-api . --no-cache
                   sudo docker tag todo-fast-api:latest 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
                   sudo docker push 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
-                  docker image rm -f todo-fast-api:latest
+                  sudo docker image rm -f todo-fast-api:latest
