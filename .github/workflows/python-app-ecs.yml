@@ -99,7 +99,7 @@ jobs:
             - name: Build docker
               run: |
                   aws ecr get-login-password --region ${{ vars.AWS_REGION_NAME }} | sudo docker login --username AWS --password-stdin 917804555365.dkr.ecr.ap-southeast-1.amazonaws.com
-                  sudo docker image prune -a | y
                   sudo docker build -t todo-fast-api . --no-cache
                   sudo docker tag todo-fast-api:latest 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
                   sudo docker push 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
+                  docker image rm -f todo-fast-api:latest
