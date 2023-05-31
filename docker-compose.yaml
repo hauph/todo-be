@@ -9,7 +9,6 @@ networks:
       config:
         - subnet: "169.254.170.0/24"
           gateway: 169.254.170.1
-  # my_network:
 services:
   # This container vends credentials to your containers
   ecs-local-endpoints:
@@ -56,8 +55,9 @@ services:
       - db
       - ecs-local-endpoints
     networks:
-      # - my_network
-      - credentials_network
+      # - credentials_network
+      credentials_network:
+        ipv4_address: "169.254.170.3"
   db:
     image: postgres:14-bullseye
     ports:

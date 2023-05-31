@@ -48,10 +48,6 @@ jobs:
                   # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
                   poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-            # - name: Test with pytest
-            #   run: |
-            #       poetry run pytest
-
     build_and_deploy:
         needs: [pull_code, lint]
 
@@ -100,18 +96,10 @@ jobs:
                   role-to-assume: arn:aws:iam::917804555365:role/iam-roles-to-connect-github-actions-to-aws
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
 
-            # - name: Login to Amazon ECR
-            #   id: ecr-login
-            #   uses: aws-actions/amazon-ecr-login@v1
-
             - name: Build docker
-              #   env:
-              #       REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-              #       REPOSITORY: todo-fast-api
-              #       IMAGE_TAG: ${{ github.sha }}
               run: |
                   aws ecr get-login-password --region ${{ vars.AWS_REGION_NAME }} | sudo docker login --username AWS --password-stdin 917804555365.dkr.ecr.ap-southeast-1.amazonaws.com
-                  sudo docker image prune -a
+                  sudo docker image prune -a | y
                   sudo docker build -t todo-fast-api . --no-cache
                   sudo docker tag todo-fast-api:latest 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
                   sudo docker push 917804555365.dkr.ecr.${{ vars.AWS_REGION_NAME }}.amazonaws.com/todo-fast-api:latest
