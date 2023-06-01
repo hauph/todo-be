@@ -76,4 +76,7 @@ COPY main.py /app
 
 EXPOSE 8000
 
+RUN --mount=type=cache,target=/root/.cache \
+    alembic upgrade head
+
 CMD python main.py
